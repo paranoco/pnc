@@ -1,0 +1,44 @@
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+builds:
+  - goos:
+      - darwin
+      - linux
+        #      - windows
+        # - freebsd
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+
+project_name: pnc
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+brews:
+  - homepage: 'https://github.com/paranoco/pnc'
+    description: 'Paranoco CLI toolbelt'
+    folder: Formula
+    commit_author:
+      name: Paranoco Bot
+      email: bots+github@paranoco.com
+    tap:
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      owner: paranoco
+      name: homebrew-tap
