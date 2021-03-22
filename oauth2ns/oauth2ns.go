@@ -19,6 +19,10 @@ import (
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
+type Oauth2Cli struct {
+
+}
+
 func randSeq(n int) string {
 	b := make([]rune, n)
 	for i := range b {
@@ -57,7 +61,7 @@ func WithAuthCallHTTPParams(values url.Values) AuthenticateUserOption {
 }
 
 // AuthenticateUser starts the login process
-func AuthenticateUser(oauthConfig *oauth2.Config, options ...AuthenticateUserOption) (*AuthorizedClient, error) {
+func (o *Oauth2Cli) AuthenticateUser(oauthConfig *oauth2.Config, options ...AuthenticateUserOption) (*AuthorizedClient, error) {
 	// validate params
 	if oauthConfig == nil {
 		return nil, stacktrace.NewError("oauthConfig can't be nil")
@@ -101,13 +105,11 @@ func AuthenticateUser(oauthConfig *oauth2.Config, options ...AuthenticateUserOpt
 		urlString = fmt.Sprintf("%s&device_id=%s&device_name=%s", urlString, DEVICE_NAME, DEVICE_NAME)
 	}
 
-	clientChan, stopHTTPServerChan, cancelAuthentication := startHTTPServer(ctx, oauthConfig)
-	log.Println(color.CyanString("You will now be taken to your browser for authentication or open the url below in a browser."))
-	log.Println(color.CyanString(urlString))
-	log.Println(color.CyanString("If you are opening the url manually on a different machine you will need to curl the result url on this machine manually."))
+	clientChan, stopHTTPServerChan, cancelAuthentication := o.startHTTPServer(ctx, oauthConfig)
+	log.Println(color.GreenString("You will be taken to your Single Sign-On on your browser for authentication."))
+	log.Println(color.CyanString("You may also manually navigate to %s", urlString))
 	time.Sleep(1000 * time.Millisecond)
-	err := open.Run("javascript:alert('hi')")
-	// urlString)
+	err := open.Run(urlString)
 	if err != nil {
 		log.Println(color.RedString("Failed to open browser, you MUST do the manual process."))
 	}
@@ -115,7 +117,7 @@ func AuthenticateUser(oauthConfig *oauth2.Config, options ...AuthenticateUserOpt
 
 	// shutdown the server after timeout
 	go func() {
-		log.Printf("Authentication will be cancelled in %s seconds", strconv.Itoa(authTimeout))
+		log.Printf(color.CyanString("Single Sign-On Authentication will timeout in %s seconds", strconv.Itoa(authTimeout)))
 		time.Sleep(authTimeout * time.Second)
 		stopHTTPServerChan <- struct{}{}
 	}()
@@ -129,24 +131,24 @@ func AuthenticateUser(oauthConfig *oauth2.Config, options ...AuthenticateUserOpt
 
 		// if authentication process is cancelled first return an error
 	case <-cancelAuthentication:
-		return nil, fmt.Errorf("authentication timed out and was cancelled")
+		return nil, fmt.Errorf(color.RedString("Authentication timed out and was cancelled"))
 	}
 }
 
-func startHTTPServer(ctx context.Context, conf *oauth2.Config) (clientChan chan *AuthorizedClient, stopHTTPServerChan chan struct{}, cancelAuthentication chan struct{}) {
+func (o *Oauth2Cli) startHTTPServer(ctx context.Context, conf *oauth2.Config) (clientChan chan *AuthorizedClient, stopHTTPServerChan chan struct{}, cancelAuthentication chan struct{}) {
 	// init returns
 	clientChan = make(chan *AuthorizedClient)
 	stopHTTPServerChan = make(chan struct{})
 	cancelAuthentication = make(chan struct{})
 
-	http.HandleFunc("/oauth/callback", callbackHandler(ctx, conf, clientChan))
+	http.HandleFunc("/oauth/callback", o.callbackHandler(ctx, conf, clientChan))
 	srv := &http.Server{Addr: ":" + strconv.Itoa(PORT)}
 
 	// handle server shutdown signal
 	go func() {
 		// wait for signal on stopHTTPServerChan
 		<-stopHTTPServerChan
-		log.Println("Shutting down server...")
+		log.Println(color.GreenString("Authentication succeeded! Shutting down authentication listener..."))
 
 		// give it 5 sec to shutdown gracefully, else quit program
 		d := time.Now().Add(5 * time.Second)
@@ -154,7 +156,7 @@ func startHTTPServer(ctx context.Context, conf *oauth2.Config) (clientChan chan 
 		defer cancel()
 
 		if err := srv.Shutdown(ctx); err != nil {
-			log.Printf(color.RedString("Auth server could not shutdown gracefully: %v"), err)
+			log.Printf(color.RedString("Authentication listener could not shutdown gracefully: %v"), err)
 		}
 
 		// after server is shutdown, quit program
@@ -164,15 +166,15 @@ func startHTTPServer(ctx context.Context, conf *oauth2.Config) (clientChan chan 
 	// handle callback request
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			log.Fatalf(color.RedString("listen: %s\n", err))
 		}
-		fmt.Println("Server gracefully stopped")
+		log.Printf(color.GreenString("Authentication listener shutdown gracefully."))
 	}()
 
 	return clientChan, stopHTTPServerChan, cancelAuthentication
 }
 
-func callbackHandler(ctx context.Context, oauthConfig *oauth2.Config, clientChan chan *AuthorizedClient) func(w http.ResponseWriter, r *http.Request) {
+func (o *Oauth2Cli) callbackHandler(ctx context.Context, oauthConfig *oauth2.Config, clientChan chan *AuthorizedClient) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestStateString := ctx.Value(oauthStateStringContextKey).(string)
 		responseStateString := r.FormValue("state")
@@ -197,8 +199,8 @@ func callbackHandler(ctx context.Context, oauthConfig *oauth2.Config, clientChan
 		// show success page
 		successPage := `
 		<div style="height:100px; width:100%!; display:flex; flex-direction: column; justify-content: center; align-items:center; background-color:#2ecc71; color:white; font-size:22"><div>Success!</div></div>
-		<p style="margin-top:20px; font-size:18; text-align:center">You are authenticated, you can now return to the program. This will auto-close</p>
-		<script>window.onload=function(){setTimeout(this.close, 4000)}</script>
+		<p style="margin-top:20px; font-size:18; text-align:center">You have successfully authenticated with your Single Sign-On account, and you may proceed with <b>pnc</b>.<br/>This window will momentarily close.</p>
+		<script>window.onload=function(){setTimeout(this.close, 1000)}</script>
 		`
 		fmt.Fprintf(w, successPage)
 		// quitSignalChan <- quitSignal

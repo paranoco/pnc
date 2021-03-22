@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/gob"
+	"encoding/hex"
 	"encoding/pem"
 )
 
@@ -70,8 +71,7 @@ func hostIdFromPublicKey(public []byte) string {
 	hashEngine := md5.New()
 	hashEngine.Write(public)
 	hash := hashEngine.Sum(nil)
-
-	return string(hash)
+	return hex.EncodeToString(hash)
 }
 
 func generateKeys() (private []byte, public []byte, err error) {
