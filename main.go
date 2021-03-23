@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/paranoco/pnc/vpn"
 	"log"
 	"os"
+
+	"github.com/paranoco/pnc/vpn"
 
 	"github.com/urfave/cli/v2"
 )
@@ -36,6 +37,11 @@ func main() {
 				Aliases: []string{"ip"},
 				Usage:   "prints your public IPv4",
 				Action:  PublicIpCommand,
+			},
+			{
+				Name:   "status",
+				Usage:  "prints configuration status",
+				Action: vpn.StatusCommand,
 			},
 		},
 	}
