@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/paranoco/pnc/vpn"
 	"log"
 	"os"
 
@@ -15,6 +16,21 @@ func main() {
 		Version: version,
 		Usage:   "paranoco toolbelt",
 		Commands: []*cli.Command{
+			{
+				Name:   "vpn",
+				Usage:  "connect to a configured VPN",
+				Action: vpn.VpnCommand,
+			},
+			{
+				Name:   "vpn-config",
+				Usage:  "configure a VPN to connect to",
+				Action: vpn.VpnConfigCommand,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name: "set-vpn",
+					},
+				},
+			},
 			{
 				Name:    "public-ip",
 				Aliases: []string{"ip"},
