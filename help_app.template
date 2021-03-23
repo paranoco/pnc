@@ -1,0 +1,27 @@
+[white][bold]NAME:[reset]
+   {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
+
+[white][bold]USAGE:[reset]
+   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Version}}{{if not .HideVersion}}
+
+[white][bold]VERSION:[reset]
+   {{.Version}}{{end}}{{end}}{{if .Description}}
+
+[white][bold]DESCRIPTION:[reset]
+   {{.Description | nindent 3 | trim}}{{end}}{{if len .Authors}}
+
+[white][bold]AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:[reset]
+   {{range $index, $author := .Authors}}{{if $index}}
+   {{end}}{{$author}}{{end}}{{end}}{{if .VisibleCommands}}
+
+[white][bold]COMMANDS:[reset]{{range .VisibleCategories}}{{if .Name}}
+   {{.Name}}:{{range .VisibleCommands}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
+   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+
+[white][bold]GLOBAL OPTIONS:[reset]
+   {{range $index, $option := .VisibleFlags}}{{if $index}}
+   {{end}}{{$option}}{{end}}{{end}}{{if .Copyright}}
+
+[white][bold]COPYRIGHT:[reset]
+   {{.Copyright}}{{end}}
