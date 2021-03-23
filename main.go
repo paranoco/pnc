@@ -1,9 +1,11 @@
 package main
 
 import (
+	_ "embed"
 	"log"
 	"os"
 
+	"github.com/mitchellh/colorstring"
 	"github.com/paranoco/pnc/vpn"
 
 	"github.com/urfave/cli/v2"
@@ -11,11 +13,25 @@ import (
 
 var version string = "dev"
 
+//go:embed help_app.template
+var appHelpTemplate string
+
+//go:embed help_command.template
+var commandHelpTemplate string
+
+//go:embed help_subcommand.template
+var subcommandHelpTemplate string
+
 func main() {
+	cli.AppHelpTemplate = colorstring.Color(appHelpTemplate)
+	cli.CommandHelpTemplate = colorstring.Color(commandHelpTemplate)
+	cli.SubcommandHelpTemplate = colorstring.Color(subcommandHelpTemplate)
+
 	app := &cli.App{
-		Name:    "pnc",
-		Version: version,
-		Usage:   "paranoco toolbelt",
+		Name:        "pnc",
+		Version:     version,
+		HideVersion: false,
+		Usage:       "paranoco toolbelt",
 		Commands: []*cli.Command{
 			{
 				Name:   "vpn",

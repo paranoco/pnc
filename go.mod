@@ -1,6 +1,6 @@
 module github.com/paranoco/pnc
 
-go 1.14
+go 1.16
 
 require (
 	github.com/99designs/keyring v1.1.6
@@ -9,7 +9,8 @@ require (
 	github.com/hashicorp/hcl/v2 v2.9.0
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/terraform v0.14.7
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nmrshll/rndm-go v0.0.0-20170430161430-8da3024e53de
 	github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce
 	github.com/palantir/stacktrace v0.0.0-20161112013806-78658fd2d177

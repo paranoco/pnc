@@ -1,0 +1,17 @@
+[white][bold]NAME:[reset]
+   {{.HelpName}} - {{.Usage}}
+
+[white][bold]USAGE:[reset]
+   {{if .UsageText}}{{.UsageText}}{{else}}{{.HelpName}} command{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+
+[white][bold]DESCRIPTION:[reset]
+   {{.Description | nindent 3 | trim}}{{end}}
+
+[white][bold]COMMANDS:[reset]{{range .VisibleCategories}}{{if .Name}}
+   {{.Name}}:{{range .VisibleCommands}}
+     {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
+   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
+
+[white][bold]OPTIONS:[reset]
+   {{range .VisibleFlags}}{{.}}
+{{end}}{{end}}
