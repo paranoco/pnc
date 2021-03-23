@@ -7,10 +7,13 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var version string = "dev"
+
 func main() {
 	app := &cli.App{
-		Name:                 "pnc",
-		Usage:                "paranoco toolbelt",
+		Name:    "pnc",
+		Version: version,
+		Usage:   "paranoco toolbelt",
 		Commands: []*cli.Command{
 			{
 				Name:    "public-ip",

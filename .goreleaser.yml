@@ -15,6 +15,8 @@ builds:
     goarm:
       - 6
       - 7
+    ldflags:
+      - -s -w -X main.version={{.Version}}
 
 project_name: pnc
 
