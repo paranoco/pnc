@@ -7,7 +7,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-10.15
+    strategy:
+      matrix:
+        include:
+          - os: macos-10.15
+            goreleaser_profile: darwin
+          - os: ubuntu-latest
+            goreleaser_profile: linux
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,7 +33,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           version: latest
-          args: -f .goreleaser.yml release --rm-dist
+          args: -f .goreleaser.${{ matrix.goreleaser_profile }}.yml release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}

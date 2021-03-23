@@ -1,0 +1,42 @@
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+builds:
+  - id: pnc-darwin
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+project_name: pnc
+
+checksum:
+  disable: true
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+brews:
+  - homepage: 'https://github.com/paranoco/pnc'
+    description: 'Paranoco CLI toolbelt'
+    folder: Formula
+    commit_author:
+      name: Paranoco Bot
+      email: bots+github@paranoco.com
+    tap:
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      owner: paranoco
+      name: homebrew-tap
