@@ -117,6 +117,11 @@ func runWireguard(configurationFunc ConfigurationFunc) error {
 func VpnCommand(c *cli.Context) error {
 	ostools.EnsureAdministratorRights()
 
+	logger := device.NewLogger(
+		device.LogLevelDebug,
+		fmt.Sprintf("(%s) ", "vpn"),
+	)
+
 	conf, err := GetVpnConfig()
 	if err != nil {
 		return errors.Wrap(err, "you must set a VPN configuration with pnc vpn-config")
@@ -151,6 +156,7 @@ func VpnCommand(c *cli.Context) error {
 		}
 
 		for _, network := range sessionConf.RouterNetworks {
+			logger.Info.Printf("Routing %s through %s's VPN", network, conf.VPNEndpoint)
 			addRouteTo(network, interfaceName)
 		}
 
